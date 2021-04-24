@@ -17,6 +17,9 @@ onready var pHitBox = $Collision_Body
 var hitBox_playerOnly
 var hitBox_withPickRight
 var hitBox_withPickLeft
+var hitBox_withPickDown
+onready var digArea = $Pickaxe/Area2D
+onready var tileMap = self.get_parent().get_child(0)
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -62,6 +65,11 @@ func setup_hitBoxes():
 	hitBox_playerOnly.set(1,hitBox_withPickRight[3])
 	hitBox_playerOnly.set(2,hitBox_withPickRight[3])
 	
+	#Cheat.. and just make player taller for "down" dig hitbox
+	hitBox_withPickDown = hitBox_playerOnly
+	hitBox_withPickDown.set(4,Vector2(16,42))
+	hitBox_withPickDown.set(5,Vector2(-16,42))
+	
 	pHitBox.set_polygon(hitBox_playerOnly)
 	
 # Check which keys are pressed, respond appropriately
@@ -99,37 +107,58 @@ func handlePlayerInput():
 	# Pickaxe controls
 	if(Input.is_action_pressed("ui_select")):
 		
+		#Make the pick visible
+		if(pPick.visible == false):
+			pPick.show()
+		
 		#Check if we are digging DOWN
 		if(Input.is_action_pressed("ui_down")):
-			pPick.show()
+			pPick.position.x = 0
 			pPick.position.y = 42
 			pPick.flip_v = true
+			
+			#Check for dig, then update polygon
+			checkForDig()
+			pHitBox.set_polygon(hitBox_withPickDown)
 		else:
 			pPick.position.y = -24
 			pPick.flip_v = false
 		
-		#Make the pick visible
-		if(pPick.visible == false):
-			pPick.show()
-			
-		#Update hitbox & pickaxe position
-		if(velocity.x > 0):
-			pHitBox.set_polygon(hitBox_withPickRight)
-			pPick.position.x = 30
-			pPick.flip_h = false
-		else:
-			pHitBox.set_polygon(hitBox_withPickLeft)
-			pPick.position.x = -30
-			pPick.flip_h = true
+			#Update hitbox & pickaxe position
+			if(velocity.x > 0):
+				pPick.position.x = 30
+				pPick.flip_h = false
 				
-		#Check for DIG
-			
-	if(Input.is_action_just_released("ui_accept")):
+				#Check for dig, then update polygon
+				checkForDig()
+				pHitBox.set_polygon(hitBox_withPickRight)
+			else:
+				pPick.position.x = -30
+				pPick.flip_h = true
+				
+				#Check for dig, then update polygon
+				checkForDig()
+				pHitBox.set_polygon(hitBox_withPickLeft)
+	else:
 		if(pPick.visible == true):
 			pPick.hide()
 			#Update hitbox
 			pHitBox.set_polygon(hitBox_playerOnly)
 			
+
+
+# Before we adjust the hitbox, check if we should dig the tile we hit
+func checkForDig():
+	#Update dig area location (handled by pickaxe move)
+	
+	#Check for bodies in area
+	var digLocation = digArea.global_position
+	var targetTile = tileMap.get_cellv(tileMap.world_to_map(digLocation))
+	var tileName = tileMap.tile_set.tile_get_name(targetTile)
+	
+	if(tileName == "Dirt"):
+		print("dig")
+		tileMap.set_cellv(tileMap.world_to_map(digLocation), 3)
 
 
 # Handle player animations as their state changes
@@ -166,3 +195,11 @@ func handlePlayerMovment(delta):
 	if get_slide_count() != 0 :
 		for i in range (0,get_slide_count()) :
 			emit_signal("playerCollided", self, get_slide_collision(i))
+
+# we in water
+func _on_Area2D_area_entered(area):
+	gravity = 50
+
+# we left water
+func _on_Area2D_area_exited(area):
+	gravity = 200
