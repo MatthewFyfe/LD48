@@ -8,6 +8,7 @@ var airFriction
 var jumpForce
 
 signal playerCollided
+signal gemMined
 
 onready var pSprite = $AnimatedSprite
 
@@ -20,6 +21,10 @@ var hitBox_withPickLeft
 var hitBox_withPickDown
 onready var digArea = $Pickaxe/Area2D
 onready var tileMap = self.get_parent().get_child(0)
+
+#Water stuff
+var airLevel = 100
+var drowning = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -41,6 +46,7 @@ func _process(_delta):
 # Every physics tic...
 func _physics_process(delta):
 	handlePlayerMovment(delta)
+	handleDrowning(delta)
 
 
 # Configure player and pickaxe hitboxes
@@ -158,7 +164,11 @@ func checkForDig():
 	
 	if(tileName == "Dirt"):
 		print("dig")
-		tileMap.set_cellv(tileMap.world_to_map(digLocation), 3)
+		tileMap.set_cellv(tileMap.world_to_map(digLocation), 2)
+	elif(tileName == "Gem"):
+		print("gem")
+		tileMap.set_cellv(tileMap.world_to_map(digLocation), 2)
+		emit_signal("gemMined")
 
 
 # Handle player animations as their state changes
@@ -196,10 +206,29 @@ func handlePlayerMovment(delta):
 		for i in range (0,get_slide_count()) :
 			emit_signal("playerCollided", self, get_slide_collision(i))
 
+
+# Check and adjust air levels
+func handleDrowning(delta):
+	if(drowning and airLevel > -1):
+		airLevel -= 5*delta
+	elif(airLevel < 100):
+		airLevel += 15*delta
+		
+	clamp(airLevel, -1, 100)
+	
+	#update air meter
+	
+	#check if we are dead
+
+
 # we in water
-func _on_Area2D_area_entered(area):
-	gravity = 50
+func _on_Area2D_area_entered(area, source):
+	if(source == "water"):
+		gravity = 50
+		drowning = true
 
 # we left water
-func _on_Area2D_area_exited(area):
-	gravity = 200
+func _on_Area2D_area_exited(area, source):
+	if(source == "water"):
+		gravity = 200
+		drowning = false
