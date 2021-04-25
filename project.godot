@@ -20,7 +20,7 @@ run/main_scene="res://Scenes/MainMenu.tscn"
 
 [autoload]
 
-GameTracker="*res://GameTracker.gd"
+GameTracker="*res://Scripts/GameTracker.gd"
 
 [input]
 
