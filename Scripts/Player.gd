@@ -9,6 +9,8 @@ var jumpForce
 
 signal playerCollided
 signal gemMined
+signal playerDrowning
+signal playerNotDrowning
 
 onready var pSprite = $AnimatedSprite
 
@@ -22,9 +24,8 @@ var hitBox_withPickDown
 onready var digArea = $Pickaxe/Area2D
 onready var tileMap = self.get_parent().get_child(0)
 
-#Water stuff
-var airLevel = 100
-var drowning = false
+var airTileNum = 6
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -46,7 +47,6 @@ func _process(_delta):
 # Every physics tic...
 func _physics_process(delta):
 	handlePlayerMovment(delta)
-	handleDrowning(delta)
 
 
 # Configure player and pickaxe hitboxes
@@ -164,12 +164,22 @@ func checkForDig():
 	
 	if(tileName == "Dirt"):
 		print("dig")
-		tileMap.set_cellv(tileMap.world_to_map(digLocation), 2)
+		tileMap.set_cellv(tileMap.world_to_map(digLocation), airTileNum)
+		#spawn dirt particles
+		spawnDirt()
 	elif(tileName == "Gem"):
 		print("gem")
-		tileMap.set_cellv(tileMap.world_to_map(digLocation), 2)
+		tileMap.set_cellv(tileMap.world_to_map(digLocation), airTileNum)
 		emit_signal("gemMined")
+	elif(tileName == "Exit"):
+		get_tree().change_scene("res://Scenes/MainMenu.tscn")
 
+
+func spawnDirt():
+	var scene = load("res://Scenes/Prefabs/DigParticles.tscn")
+	var dirt = scene.instance()
+	dirt.emitting = true
+	add_child(dirt)
 
 # Handle player animations as their state changes
 func updateAnimations():
@@ -206,29 +216,17 @@ func handlePlayerMovment(delta):
 		for i in range (0,get_slide_count()) :
 			emit_signal("playerCollided", self, get_slide_collision(i))
 
-
-# Check and adjust air levels
-func handleDrowning(delta):
-	if(drowning and airLevel > -1):
-		airLevel -= 5*delta
-	elif(airLevel < 100):
-		airLevel += 15*delta
-		
-	clamp(airLevel, -1, 100)
-	
-	#update air meter
-	
-	#check if we are dead
+func _on_HUD_playerDead():
+	pass # Replace with function body.
 
 
-# we in water
-func _on_Area2D_area_entered(area, source):
+func _on_WaterLevel_area_entered(_area, source):
 	if(source == "water"):
 		gravity = 50
-		drowning = true
+		emit_signal("playerDrowning")
 
-# we left water
-func _on_Area2D_area_exited(area, source):
+
+func _on_WaterLevel_area_exited(_area, source):
 	if(source == "water"):
 		gravity = 200
-		drowning = false
+		emit_signal("playerNotDrowning")

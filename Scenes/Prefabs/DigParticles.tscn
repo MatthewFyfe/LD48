@@ -1,0 +1,14 @@
+[gd_scene format=2]
+
+[node name="DigParticles" type="CPUParticles2D"]
+emitting = false
+amount = 12
+one_shot = true
+explosiveness = 1.0
+emission_shape = 1
+emission_sphere_radius = 5.0
+direction = Vector2( 0, -1 )
+initial_velocity = 45.0
+scale_amount = 12.0
+scale_amount_random = 1.0
+color = Color( 0.537255, 0.380392, 0.129412, 1 )
