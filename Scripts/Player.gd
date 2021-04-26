@@ -24,8 +24,18 @@ var hitBox_withPickDown
 onready var digArea = $Pickaxe/Area2D
 onready var tileMap = self.get_parent().get_child(0)
 
-var airTileNum = 6
+var airTileNum = -1
 
+#Audio stuff
+onready var backgroundAudio = $BackgroundAudio
+onready var backgroundAudio2 = $BackgroundAudio2
+onready var soundEffects = $SoundEffects
+
+var drowningBackground = preload("res://SFX/drowning.ogg")
+var caveBackground = preload("res://SFX/CaveTheme.ogg")
+var digSFX = preload("res://SFX/dig.ogg")
+var gemSFX = preload("res://SFX/gem.ogg")
+var pickSFX = preload("res://SFX/pickaxe.ogg")
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -35,6 +45,12 @@ func _ready():
 	acceleration = 0.3
 	airFriction = 0.05
 	jumpForce = -150
+	
+	digSFX.loop = false
+	gemSFX.loop = false
+	pickSFX.loop = false
+	
+	backgroundAudio2.play()
 	
 	setup_hitBoxes()
 
@@ -163,16 +179,26 @@ func checkForDig():
 	var tileName = tileMap.tile_set.tile_get_name(targetTile)
 	
 	if(tileName == "Dirt"):
-		print("dig")
+		#play dig sound
+		soundEffects.stream = digSFX
+		soundEffects.play(0.75)
 		tileMap.set_cellv(tileMap.world_to_map(digLocation), airTileNum)
 		#spawn dirt particles
 		spawnDirt()
+		
 	elif(tileName == "Gem"):
-		print("gem")
+		#play gem sound
+		soundEffects.stream = gemSFX
+		soundEffects.play(0.1)
 		tileMap.set_cellv(tileMap.world_to_map(digLocation), airTileNum)
 		emit_signal("gemMined")
 	elif(tileName == "Exit"):
 		get_tree().change_scene("res://Scenes/MainMenu.tscn")
+	else:
+		#we hit nothing, woosh!
+		if(Input.is_action_just_pressed("ui_accept")):
+			soundEffects.stream = pickSFX
+			soundEffects.play(0.5)
 
 
 func spawnDirt():
@@ -217,16 +243,25 @@ func handlePlayerMovment(delta):
 			emit_signal("playerCollided", self, get_slide_collision(i))
 
 func _on_HUD_playerDead():
-	pass # Replace with function body.
+	#we drowned... no gems for you!
+	GameTracker.resetGame()
+	get_tree().change_scene("res://Scenes/MainMenu.tscn")
+	
 
 
 func _on_WaterLevel_area_entered(_area, source):
 	if(source == "water"):
 		gravity = 50
 		emit_signal("playerDrowning")
-
+		
+		#play drowning sfx
+		backgroundAudio.stream = drowningBackground
+		backgroundAudio.play(1)
 
 func _on_WaterLevel_area_exited(_area, source):
 	if(source == "water"):
 		gravity = 200
 		emit_signal("playerNotDrowning")
+		
+		#stop drowning sfx
+		backgroundAudio.stop()

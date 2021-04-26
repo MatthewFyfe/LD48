@@ -37,12 +37,12 @@ margin_right = 944.0
 margin_bottom = 14.0
 
 [node name="gameTitle" type="Label" parent="CanvasLayer/MarginContainer/VBoxContainer/title"]
-margin_left = 434.0
-margin_right = 509.0
+margin_left = 410.0
+margin_right = 533.0
 margin_bottom = 14.0
 custom_colors/font_color = Color( 0, 0, 0, 1 )
 custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
-text = "GAME TITLE"
+text = "Dig 'Till You Drown!"
 
 [node name="art" type="CenterContainer" parent="CanvasLayer/MarginContainer/VBoxContainer"]
 margin_top = 18.0
@@ -67,8 +67,8 @@ margin_right = 944.0
 margin_bottom = 562.0
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/MarginContainer/VBoxContainer/levels"]
-margin_left = 179.0
-margin_right = 765.0
+margin_left = 272.0
+margin_right = 672.0
 margin_bottom = 20.0
 
 [node name="Level1_B" type="Button" parent="CanvasLayer/MarginContainer/VBoxContainer/levels/HBoxContainer"]
@@ -101,28 +101,49 @@ margin_bottom = 20.0
 text = "Level 5"
 
 [node name="Level6_B" type="Button" parent="CanvasLayer/MarginContainer/VBoxContainer/levels/HBoxContainer"]
+visible = false
 margin_left = 310.0
 margin_right = 368.0
 margin_bottom = 20.0
 text = "Level 6"
 
 [node name="Level7_B" type="Button" parent="CanvasLayer/MarginContainer/VBoxContainer/levels/HBoxContainer"]
-margin_left = 372.0
-margin_right = 430.0
+visible = false
+margin_left = 310.0
+margin_right = 368.0
 margin_bottom = 20.0
 text = "Level 7"
 
 [node name="Level8_B" type="Button" parent="CanvasLayer/MarginContainer/VBoxContainer/levels/HBoxContainer"]
-margin_left = 434.0
-margin_right = 492.0
+visible = false
+margin_left = 310.0
+margin_right = 368.0
 margin_bottom = 20.0
 text = "Level 8"
 
 [node name="Reset" type="Button" parent="CanvasLayer/MarginContainer/VBoxContainer/levels/HBoxContainer"]
-margin_left = 496.0
-margin_right = 586.0
+margin_left = 310.0
+margin_right = 400.0
 margin_bottom = 20.0
 text = "Reset Game"
+
+[node name="gameStory" type="Label" parent="CanvasLayer"]
+margin_left = 250.0
+margin_top = 100.0
+margin_right = 800.0
+margin_bottom = 600.0
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+text = "As the inheritor of the rare and valuable water gem mines, fortune awaits you beneath the earth!
+
+If you could just manage to get 15 gems, perhaps Lady Cerulean would accept your proposal...
+
+Select Level 1 to learn how to play. Good luck!
+
+(All levels unlocked for GameJam purposes. Optional hard mode: no replaying levels)"
+autowrap = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="GameTracker" parent="." instance=ExtResource( 4 )]
 [connection signal="pressed" from="CanvasLayer/MarginContainer/VBoxContainer/levels/HBoxContainer/Level1_B" to="." method="_on_Level1_B_pressed"]
